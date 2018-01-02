@@ -35,11 +35,11 @@ export class ModalContainerComponent implements OnInit, OnDestroy {
   isShown = false;
   level: number;
   isAnimated: boolean;
+  bsModalService: BsModalService;
   private isModalHiding = false;
 
   constructor(options: ModalOptions,
               protected _element: ElementRef,
-              private bsModalService: BsModalService,
               private _renderer: Renderer2) {
     this.config = Object.assign({}, options);
   }
@@ -102,9 +102,12 @@ export class ModalContainerComponent implements OnInit, OnDestroy {
     }
   }
 
-  hide(): void {
+  hide(dismissReason?: any): void {
     if (this.isModalHiding || !this.isShown) {
       return;
+    }
+    if (dismissReason) {
+      this.bsModalService.setDismissReason(dismissReason);
     }
     this.isModalHiding = true;
     this._renderer.removeClass(
