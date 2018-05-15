@@ -8,9 +8,14 @@ import { TooltipConfig } from './tooltip.config';
 import { ComponentLoader, ComponentLoaderFactory } from '../component-loader/index';
 import { OnChange } from '../utils/decorators';
 import { warnOnce } from '../utils/warn-once';
-import { parseTriggers } from '../utils/triggers';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/observable/timer';
+import 'rxjs/add/observable/of';
+
+const _obsHide = Observable.of<null>(null);
+const _obsShow = Observable.of<null>(null);
 
 @Directive({
   selector: '[tooltip], [tooltipHtml]',
@@ -70,7 +75,14 @@ export class TooltipDirective implements OnInit, OnDestroy {
   /**
    * Delay before showing the tooltip
    */
-  @Input() delay: number;
+  @Input() get delay(): number {
+    return this._delay;
+  }
+
+  set delay(delay: number) {
+    this._delay = delay;
+    this._obsWithDelay = Observable.timer(delay);
+  }
 
   /**
    * Emits an event when the tooltip is shown
@@ -175,21 +187,23 @@ export class TooltipDirective implements OnInit, OnDestroy {
   /** @deprecated */
   @Output()
   tooltipStateChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
-  protected _delayTimeoutId: number | any;
-  protected _tooltipCancelShowFn: Function;
+  protected _obsWithDelay: Observable<number>;
+  protected visibilityStream = new BehaviorSubject(false);
 
+  private _delay: number;
   private _tooltip: ComponentLoader<TooltipContainerComponent>;
+  private _newState: boolean;
 
   constructor(_viewContainerRef: ViewContainerRef,
-                     private _renderer: Renderer2,
-                     private _elementRef: ElementRef,
+                     _renderer: Renderer2,
+                     _elementRef: ElementRef,
                      cis: ComponentLoaderFactory,
                      config: TooltipConfig) {
     this._tooltip = cis
       .createLoader<TooltipContainerComponent>(
-        this._elementRef,
+        _elementRef,
         _viewContainerRef,
-        this._renderer
+        _renderer
       )
       .provide({provide: TooltipConfig, useValue: config});
 
@@ -201,13 +215,21 @@ export class TooltipDirective implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._tooltip.listen({
       triggers: this.triggers,
-      show: () => this.show()
+      show: () => this.visibilityStream.next(true),
+      hide: () => this.visibilityStream.next(false)
     });
     this.tooltipChange.subscribe((value: any) => {
       if (!value) {
         this._tooltip.hide();
       }
     });
+    this.visibilityStream
+      .switchMap((data: boolean) => {
+        this._newState = data;
+
+        return this.delay ? this._obsWithDelay : (data ? _obsShow : _obsHide);
+      })
+      .subscribe(() => this.isOpen = this._newState);
   }
 
   /**
@@ -230,49 +252,19 @@ export class TooltipDirective implements OnInit, OnDestroy {
     if (
       this.isOpen ||
       this.isDisabled ||
-      this._delayTimeoutId ||
       !this.tooltip
     ) {
       return;
     }
-
-    const showTooltip = () => {
-      if (this._delayTimeoutId) {
-        this._delayTimeoutId = undefined;
-      }
-
-      this._tooltip
-        .attach(TooltipContainerComponent)
-        .to(this.container)
-        .position({attachment: this.placement})
-        .show({
-          content: this.tooltip,
-          placement: this.placement,
-          containerClass: this.containerClass
-        });
-    };
-    const cancelDelayedTooltipShowing = () => {
-      if (this._tooltipCancelShowFn) {
-        this._tooltipCancelShowFn();
-      }
-    };
-
-    if (this.delay) {
-      const timer = Observable.timer(this.delay).subscribe(() => {
-        showTooltip();
-        cancelDelayedTooltipShowing();
+    this._tooltip
+      .attach(TooltipContainerComponent)
+      .to(this.container)
+      .position({attachment: this.placement})
+      .show({
+        content: this.tooltip,
+        placement: this.placement,
+        containerClass: this.containerClass
       });
-
-      if (this.triggers) {
-        const triggers = parseTriggers(this.triggers);
-        this._tooltipCancelShowFn = this._renderer.listen(this._elementRef.nativeElement, triggers[0].close, () => {
-          timer.unsubscribe();
-          cancelDelayedTooltipShowing();
-        });
-      }
-    } else {
-      showTooltip();
-    }
   }
 
   /**
@@ -280,19 +272,12 @@ export class TooltipDirective implements OnInit, OnDestroy {
    * the tooltip.
    */
   hide(): void {
-    if (this._delayTimeoutId) {
-      clearTimeout(this._delayTimeoutId);
-      this._delayTimeoutId = undefined;
-    }
-
     if (!this._tooltip.isShown) {
       return;
     }
 
     this._tooltip.instance.classMap.in = false;
-    setTimeout(() => {
-      this._tooltip.hide();
-    }, this._fadeDuration);
+    this._tooltip.hide();
   }
 
   ngOnDestroy(): void {
