@@ -6,6 +6,7 @@ import { BsDatepickerActions } from '../../reducer/bs-datepicker.actions';
 import { BsDatepickerEffects } from '../../reducer/bs-datepicker.effects';
 import { BsDatepickerStore } from '../../reducer/bs-datepicker.store';
 import { Subscription } from 'rxjs';
+import { BsCustomDates } from '../../bs-customdates';
 
 @Component({
   selector: 'bs-daterangepicker-container',
@@ -58,6 +59,8 @@ export class BsDaterangepickerContainerComponent extends BsDatepickerAbstractCom
         .select(state => state.selectedRange)
         .subscribe(date => this.valueChange.emit(date))
     );
+
+    this.customDates = this._config.customDates;
   }
 
   daySelectHandler(day: DayViewModel): void {
@@ -86,6 +89,10 @@ export class BsDaterangepickerContainerComponent extends BsDatepickerAbstractCom
     if (this._rangeStack.length === 2) {
       this._rangeStack = [];
     }
+  }
+
+  onCustomDateSelect(bsCustomDate: BsCustomDates) {
+    this.daySelectHandler({isDisabled: false, isOtherMonth: false, date: <any>bsCustomDate.value, label: bsCustomDate.label});
   }
 
   ngOnDestroy(): void {

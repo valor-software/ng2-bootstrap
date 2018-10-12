@@ -46,12 +46,10 @@
 
     </div>
 
-    <!--applycancel buttons-->
-    <div class="bs-datepicker-buttons" *ngIf="false">
-      <button class="btn btn-success">Apply</button>
-      <button class="btn btn-default">Cancel</button>
-    </div>
-
+    <!--custom dates as buttons-->
+    <div class="bs-datepicker-buttons" *ngIf="customDates">
+      <button *ngFor="let customDate of customDates" (click)= "onCustomDateSelect(customDate)" class="btn btn-default">{{ customDate.label }}</button>
+    </div>   
   </div>
 
   <!--custom dates or date ranges picker-->

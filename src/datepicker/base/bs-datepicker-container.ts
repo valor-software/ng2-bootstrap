@@ -1,6 +1,6 @@
 // datepicker container component
 /* tslint:disable:no-empty */
-import { BsCustomDates } from '../themes/bs/bs-custom-dates-view.component';
+import { BsCustomDates } from '../bs-customdates';
 import { BsDatepickerEffects } from '../reducer/bs-datepicker.effects';
 import { Observable } from 'rxjs';
 import {
@@ -20,6 +20,7 @@ export abstract class BsDatepickerAbstractComponent {
 
   _effects: BsDatepickerEffects;
   _customRangesFish: BsCustomDates[] = [];
+  customDates: BsCustomDates[] = [];
 
   set minDate(value: Date) {
     this._effects.setMinDate(value);
