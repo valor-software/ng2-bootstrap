@@ -1,5 +1,5 @@
-import { ModuleWithProviders, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ModuleWithProviders, NgModule } from '@angular/core';
 
 import { TimepickerComponent } from './timepicker.component';
 import { TimepickerActions } from './reducer/timepicker.actions';

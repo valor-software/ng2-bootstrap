@@ -1,37 +1,49 @@
-/* tslint:disable:no-forward-ref max-file-line-count */
+/* tslint:disable: max-file-line-count */
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   forwardRef,
   Input,
   OnChanges,
   OnDestroy,
   Output,
-  SimpleChanges, ViewEncapsulation
+  Renderer2,
+  ViewChild,
+  ViewEncapsulation
 } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  ValidationErrors
+} from '@angular/forms';
 
-import { TimepickerActions } from './reducer/timepicker.actions';
-import { TimepickerStore } from './reducer/timepicker.store';
 import { getControlsValue } from './timepicker-controls.util';
+import { TimepickerActions } from './reducer/timepicker.actions';
 import { TimepickerConfig } from './timepicker.config';
+import { TimepickerStore } from './reducer/timepicker.store';
 import {
   TimeChangeSource,
   TimepickerComponentState,
   TimepickerControls
 } from './timepicker.models';
 import {
+  isInputValid,
   isValidDate,
   padNumber,
-  parseTime,
-  isInputValid,
-  isHourInputValid,
-  isMinuteInputValid,
-  isSecondInputValid,
-  isInputLimitValid
+  parseTime
 } from './timepicker.utils';
+import {
+  compose,
+  getlimitsValidator,
+  hoursValidator,
+  minutesValidator,
+  secondsValidator
+} from './input.validator';
+
+import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
 export const TIMEPICKER_CONTROL_VALUE_ACCESSOR: any = {
@@ -46,40 +58,20 @@ export const TIMEPICKER_CONTROL_VALUE_ACCESSOR: any = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [TIMEPICKER_CONTROL_VALUE_ACCESSOR, TimepickerStore],
   templateUrl: './timepicker.component.html',
-  styles: [`
-    .bs-chevron {
-      border-style: solid;
-      display: block;
-      width: 9px;
-      height: 9px;
-      position: relative;
-      border-width: 3px 0px 0 3px;
-    }
-
-    .bs-chevron-up {
-      -webkit-transform: rotate(45deg);
-      transform: rotate(45deg);
-      top: 2px;
-    }
-
-    .bs-chevron-down {
-      -webkit-transform: rotate(-135deg);
-      transform: rotate(-135deg);
-      top: -2px;
-    }
-
-    .bs-timepicker-field {
-      width: 50px;
-    }
-  `],
+  styleUrls: ['./timepicker.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
 export class TimepickerComponent
   implements ControlValueAccessor,
-    TimepickerComponentState,
-    TimepickerControls,
     OnChanges,
-    OnDestroy {
+    OnDestroy,
+    TimepickerComponentState,
+    TimepickerControls {
+
+  @ViewChild('hoursRef') hoursRef: ElementRef;
+  @ViewChild('minutesRef') minutesRef: ElementRef;
+  @ViewChild('secondsRef') secondsRef: ElementRef;
+
   /** hours change step */
   @Input() hourStep: number;
   /** hours change step */
@@ -113,10 +105,12 @@ export class TimepickerComponent
   @Output() isValid = new EventEmitter<boolean>();
 
   // ui variables
-  hours: string;
-  minutes: string;
-  seconds: string;
-  meridian: string;
+  hours = '';
+  minutes = '';
+  seconds = '';
+  meridian = 'AM';
+
+  errors: ValidationErrors = {};
 
   /** @deprecated - please use `isEditable` instead */
   get isSpinnersVisible(): boolean {
@@ -126,11 +120,6 @@ export class TimepickerComponent
   get isEditable(): boolean {
     return !(this.readonlyInput || this.disabled);
   }
-
-  // min\max validation for input fields
-  invalidHours = false;
-  invalidMinutes = false;
-  invalidSeconds = false;
 
   // time picker controls state
   canIncrementHours: boolean;
@@ -143,45 +132,43 @@ export class TimepickerComponent
 
   canToggleMeridian: boolean;
 
+  timepickerSub: Subscription;
+
   // control value accessor methods
   onChange: any = Function.prototype;
   onTouched: any = Function.prototype;
 
-  timepickerSub: Subscription;
 
   constructor(
     _config: TimepickerConfig,
-    _cd: ChangeDetectorRef,
+    changeDetection: ChangeDetectorRef,
+    private _renderer: Renderer2,
     private _store: TimepickerStore,
     private _timepickerActions: TimepickerActions
   ) {
     Object.assign(this, _config);
 
-    this.timepickerSub = _store
+    this.timepickerSub = this._store
       .select(state => state.value)
+      .pipe(filter(Boolean))
       .subscribe((value: Date) => {
         // update UI values if date changed
         this._renderTime(value);
         this.onChange(value);
+        this.errors = null;
 
         this._store.dispatch(
           this._timepickerActions.updateControls(getControlsValue(this))
         );
       });
 
-    _store
+    this._store
       .select(state => state.controls)
       .subscribe((controlsState: TimepickerControls) => {
-        this.isValid.emit(isInputValid(this.hours, this.minutes, this.seconds, this.isPM()));
+        this.isValid.emit(isInputValid(this.hours, this.minutes, this.seconds));
         Object.assign(this, controlsState);
-        _cd.markForCheck();
+        changeDetection.markForCheck();
       });
-  }
-
-  resetValidation(): void {
-    this.invalidHours = false;
-    this.invalidMinutes = false;
-    this.invalidSeconds = false;
   }
 
   isPM(): boolean {
@@ -196,101 +183,58 @@ export class TimepickerComponent
     return Math.sign($event.deltaY as number) * -1;
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
     this._store.dispatch(
       this._timepickerActions.updateControls(getControlsValue(this))
     );
   }
 
+  changeTimeOption(option: string, step: number, source: TimeChangeSource = ''): void {
+    const action: { [key: string]: string } = {
+      hours: 'changeHours',
+      minutes: 'changeMinutes',
+      seconds: 'changeSeconds'
+    };
+
+    this._store.dispatch(
+      (this as any)._timepickerActions[action[option]]({ step, source })
+    );
+  }
+
+  // old api methods
   changeHours(step: number, source: TimeChangeSource = ''): void {
-    this.resetValidation();
-    this._store.dispatch(this._timepickerActions.changeHours({ step, source }));
+    this.changeTimeOption('hours', step, source);
   }
 
   changeMinutes(step: number, source: TimeChangeSource = ''): void {
-    this.resetValidation();
-    this._store.dispatch(
-      this._timepickerActions.changeMinutes({ step, source })
-    );
+    this.changeTimeOption('minutes', step, source);
   }
 
   changeSeconds(step: number, source: TimeChangeSource = ''): void {
-    this.resetValidation();
-    this._store.dispatch(
-      this._timepickerActions.changeSeconds({ step, source })
-    );
+    this.changeTimeOption('seconds', step, source);
   }
 
+
+  updateTimeOption(option: string, value: string): void {
+    (this as any)[option] = value;
+
+    this._updateTime();
+  }
+
+  // old api methods
   updateHours(hours: string): void {
-    this.resetValidation();
-    this.hours = hours;
-
-    const isValid = isHourInputValid(this.hours, this.isPM()) && this.isValidLimit();
-
-    if (!isValid) {
-      this.invalidHours = true;
-      this.isValid.emit(false);
-      this.onChange(null);
-
-      return;
-    }
-
-    this._updateTime();
+    this.updateTimeOption('hours', hours);
   }
 
-  updateMinutes(minutes: string) {
-    this.resetValidation();
-    this.minutes = minutes;
-
-    const isValid = isMinuteInputValid(this.minutes) && this.isValidLimit();
-
-    if (!isValid) {
-      this.invalidMinutes = true;
-      this.isValid.emit(false);
-      this.onChange(null);
-
-      return;
-    }
-
-    this._updateTime();
+  updateMinutes(minutes: string): void {
+    this.updateTimeOption('minutes', minutes);
   }
 
-  updateSeconds(seconds: string) {
-    this.resetValidation();
-    this.seconds = seconds;
-
-    const isValid = isSecondInputValid(this.seconds) && this.isValidLimit();
-
-    if (!isValid) {
-      this.invalidSeconds = true;
-      this.isValid.emit(false);
-      this.onChange(null);
-
-      return;
-    }
-
-    this._updateTime();
-  }
-
-  isValidLimit(): boolean {
-    return isInputLimitValid({
-      hour: this.hours,
-      minute: this.minutes,
-      seconds: this.seconds,
-      isPM: this.isPM()
-    }, this.max, this.min);
+  updateSeconds(seconds: string): void {
+    this.updateTimeOption('seconds', seconds);
   }
 
   _updateTime() {
-    const _seconds = this.showSeconds ? this.seconds : void 0;
-    const _minutes = this.showMinutes ? this.minutes : void 0;
-    if (!isInputValid(this.hours, _minutes, _seconds, this.isPM())) {
-      this.isValid.emit(false);
-      this.onChange(null);
-
-      return;
-    }
-
     this._store.dispatch(
       this._timepickerActions.setTime({
         hour: this.hours,
@@ -301,12 +245,38 @@ export class TimepickerComponent
     );
   }
 
+  onTimeChanged(hours: string, minutes: string, seconds?: string) {
+    this.errors = this.validateAndReturnErrors({ hours, minutes, seconds });
+
+    if (!this.errors) {
+      [this.hours, this.minutes, this.seconds] = [hours, minutes, seconds];
+
+      this._updateTime();
+
+      return;
+    }
+
+    this.onChange(null);
+    this.isValid.emit(false);
+    this.meridian = this.meridians[0];
+  }
+
+  validateAndReturnErrors(timeValue: {[key: string]: string}): ValidationErrors | null {
+    return compose([
+      hoursValidator,
+      minutesValidator,
+      secondsValidator,
+      getlimitsValidator(this.min, this.max, this.isPM())
+    ])(timeValue);
+  }
+
   toggleMeridian(): void {
     if (!this.showMeridian || !this.isEditable) {
       return;
     }
 
     const _hoursPerDayHalf = 12;
+
     this._store.dispatch(
       this._timepickerActions.changeHours({
         step: _hoursPerDayHalf,
@@ -355,17 +325,9 @@ export class TimepickerComponent
   }
 
   private _renderTime(value: string | Date): void {
-    if (!isValidDate(value)) {
-      this.hours = '';
-      this.minutes = '';
-      this.seconds = '';
-      this.meridian = this.meridians[0];
-
-      return;
-    }
-
     const _value = parseTime(value);
     const _hoursPerDayHalf = 12;
+
     let _hours = _value.getHours();
 
     if (this.showMeridian) {
@@ -378,7 +340,19 @@ export class TimepickerComponent
     }
 
     this.hours = padNumber(_hours);
+    // rewrite value only if do not passed
+    if (this.hoursRef && this.hoursRef.nativeElement.value !== this.hours) {
+      this._renderer.setProperty(this.hoursRef.nativeElement, 'value', this.hours);
+    }
+
     this.minutes = padNumber(_value.getMinutes());
+    if (this.minutesRef && this.minutesRef.nativeElement.value !== this.minutes) {
+      this._renderer.setProperty(this.minutesRef.nativeElement, 'value', this.minutes);
+    }
+
     this.seconds = padNumber(_value.getUTCSeconds());
+    if (this.secondsRef && this.secondsRef.nativeElement.value !== this.hours) {
+      this._renderer.setProperty(this.secondsRef.nativeElement, 'value', this.seconds);
+    }
   }
 }
