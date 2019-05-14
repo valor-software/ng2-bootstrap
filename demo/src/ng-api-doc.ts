@@ -2948,22 +2948,6 @@ export const ngdoc: any = {
     "methods": [],
     "properties": []
   },
-  "NgTranscludeDirective": {
-    "fileName": "src/tabs/ng-transclude.directive.ts",
-    "className": "NgTranscludeDirective",
-    "description": "",
-    "selector": "[ngTransclude]",
-    "inputs": [
-      {
-        "name": "ngTransclude",
-        "type": "TemplateRef<any>",
-        "description": ""
-      }
-    ],
-    "outputs": [],
-    "properties": [],
-    "methods": []
-  },
   "TabHeadingDirective": {
     "fileName": "src/tabs/tab-heading.directive.ts",
     "className": "TabHeadingDirective",
@@ -2974,11 +2958,11 @@ export const ngdoc: any = {
     "properties": [],
     "methods": []
   },
-  "TabDirective": {
-    "fileName": "src/tabs/tab.directive.ts",
-    "className": "TabDirective",
+  "TabComponent": {
+    "fileName": "src/tabs/tab.component.ts",
+    "className": "TabComponent",
     "description": "",
-    "selector": "tab, [tab]",
+    "selector": "tab",
     "inputs": [
       {
         "name": "active",
