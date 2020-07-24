@@ -27,11 +27,7 @@ export function isValidLimit(controls: TimepickerComponentState, newDate: Date):
     return false;
   }
 
-  if (controls.max && newDate > controls.max) {
-    return false;
-  }
-
-  return true;
+  return !(controls.max && newDate > controls.max);
 }
 
 export function toNumber(value: string | number): number {
@@ -166,6 +162,59 @@ export function padNumber(value: number): string {
   }
 
   return `0${_value}`;
+}
+
+export function applyOffset(
+  offset: number,
+  hours: number,
+  minutes: number
+): { hours: number; minutes: number } {
+  let _hoursOffset = 0;
+  let _minutesOffset = 0;
+  let _negativeOffset = false;
+  let _hours = hours;
+  let _minutes = minutes;
+
+  if (offset < 0) { _negativeOffset = true; }
+  _hoursOffset = getOffsetHours(offset);
+  _minutesOffset = getOffsetMinutes(offset);
+
+  if (!_negativeOffset) {
+    if (_minutes + _minutesOffset >= 60) {
+      _hoursOffset++;
+      _minutes = (_minutes + _minutesOffset) % 60;
+    } else {
+      _minutes += _minutesOffset;
+    }
+    _hours += _hoursOffset;
+  } else {
+    if (_minutes - _minutesOffset < 0) {
+      _hoursOffset++;
+      _minutes = 60 - (Math.abs(_minutes - _minutesOffset) % 60);
+    } else {
+      _minutes -= _minutesOffset;
+    }
+    _hours -= _hoursOffset;
+  }
+
+  if (_hours >= 24) {
+    _hours = _hours % 24;
+  } else if (_hours < 0) {
+    _hours = 24 - Math.abs(_hours);
+  }
+
+  return {
+    hours: _hours,
+    minutes: _minutes
+  };
+}
+
+export function getOffsetHours(offset: number) {
+  return Math.trunc(Math.abs(offset) / 60);
+}
+
+export function getOffsetMinutes(offset: number) {
+  return Math.abs(offset) % 60;
 }
 
 export function isHourInputValid(hours: string, isPM: boolean): boolean {

@@ -35,8 +35,7 @@ export const initialState: TimepickerState = {
     canToggleMeridian: true
   }
 };
-
-// tslint:disable-next-line:cyclomatic-complexity
+/* tslint:disable:cyclomatic-complexity */
 export function timepickerReducer(state = initialState, action: Action) {
   switch (action.type) {
     case TimepickerActions.WRITE_VALUE: {
@@ -114,7 +113,10 @@ export function timepickerReducer(state = initialState, action: Action) {
         controls: _newControlsState
       };
 
-      if (state.config.showMeridian !== _newState.config.showMeridian) {
+      if (state.config.showMeridian !== _newState.config.showMeridian ||
+        state.config.offset !== _newState.config.offset ||
+        state.config.offsetTarget !== _newState.config.offsetTarget
+      ) {
         if (state.value) {
           _newState.value = new Date(state.value);
         }
@@ -127,3 +129,4 @@ export function timepickerReducer(state = initialState, action: Action) {
       return state;
   }
 }
+/* tslint:enable:cyclomatic-complexity */

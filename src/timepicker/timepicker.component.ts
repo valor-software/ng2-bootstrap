@@ -17,8 +17,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TimepickerActions } from './reducer/timepicker.actions';
 import { TimepickerStore } from './reducer/timepicker.store';
 import { getControlsValue } from './timepicker-controls.util';
-import { TimepickerConfig } from './timepicker.config';
-
+import { TimepickerConfig, TimepickerOffsetTarget } from './timepicker.config';
 import {
   TimeChangeSource,
   TimepickerComponentState,
@@ -29,6 +28,7 @@ import {
   isValidDate,
   padNumber,
   parseTime,
+  applyOffset,
   isInputValid,
   isHourInputValid,
   isMinuteInputValid,
@@ -115,6 +115,12 @@ export class TimepickerComponent
   @Input() min: Date;
   /** maximum time user can select */
   @Input() max: Date;
+  /** apply offset in minutes to apply to the displayed time (the date object itself is not modified) */
+  @Input() offset: number;
+  /** defines the target the offset should be applied to: Client applies given offset to the timezone the user is in,
+   * Utc applies to the utc time.
+   */
+  @Input() offsetTarget: TimepickerOffsetTarget = TimepickerOffsetTarget.Client;
   /** placeholder for hours field in timepicker */
   @Input() hoursPlaceholder: string;
   /** placeholder for minutes field in timepicker */
@@ -325,7 +331,6 @@ export class TimepickerComponent
     if (!this.showMeridian || !this.isEditable) {
       return;
     }
-
     const _hoursPerDayHalf = 12;
     this._store.dispatch(
       this._timepickerActions.changeHours({
@@ -389,6 +394,17 @@ export class TimepickerComponent
     const _value = parseTime(value);
     const _hoursPerDayHalf = 12;
     let _hours = _value.getHours();
+    let _minutes = _value.getMinutes();
+
+    if (this.offset) {
+      if (this.offsetTarget === TimepickerOffsetTarget.UTC) {
+        _hours = _value.getUTCHours();
+        _minutes = _value.getUTCMinutes();
+      }
+      const { hours, minutes } = applyOffset(this.offset, _hours, _minutes);
+      _hours = hours;
+      _minutes = minutes;
+    }
 
     if (this.showMeridian) {
       this.meridian = this.meridians[_hours >= _hoursPerDayHalf ? 1 : 0];
@@ -400,7 +416,7 @@ export class TimepickerComponent
     }
 
     this.hours = padNumber(_hours);
-    this.minutes = padNumber(_value.getMinutes());
+    this.minutes = padNumber(_minutes);
     this.seconds = padNumber(_value.getUTCSeconds());
   }
 }

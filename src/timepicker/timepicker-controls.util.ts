@@ -1,4 +1,5 @@
-import { changeTime } from './timepicker.utils';
+import { changeTime, getOffsetHours, getOffsetMinutes } from './timepicker.utils';
+import { TimepickerOffsetTarget } from './timepicker.config';
 import {
   TimeChangeEvent,
   TimepickerComponentState,
@@ -95,7 +96,9 @@ export function getControlsValue(
     showSeconds,
     meridians,
     min,
-    max
+    max,
+    offset,
+    offsetTarget
   } = state;
 
   return {
@@ -111,7 +114,9 @@ export function getControlsValue(
     showSeconds,
     meridians,
     min,
-    max
+    max,
+    offset,
+    offsetTarget
   };
 }
 
@@ -120,7 +125,7 @@ export function timepickerControls(
   state: TimepickerComponentState
 ): TimepickerControls {
   const hoursPerDayHalf = 12;
-  const { min, max, hourStep, minuteStep, secondsStep, showSeconds } = state;
+  const { min, max, hourStep, minuteStep, secondsStep, showSeconds, offset, offsetTarget } = state;
   const res: TimepickerControls = {
     canIncrementHours: true,
     canIncrementMinutes: true,
@@ -140,13 +145,21 @@ export function timepickerControls(
   // compare dates
   if (max) {
     const _newHour = changeTime(value, { hour: hourStep });
+
     res.canIncrementHours = max > _newHour;
+    if (offset) {
+      res.canIncrementHours = canIncrementHoursWithOffset(offset, offsetTarget, max, _newHour);
+    }
 
     if (!res.canIncrementHours) {
       const _newMinutes = changeTime(value, { minute: minuteStep });
       res.canIncrementMinutes = showSeconds
         ? max > _newMinutes
         : max >= _newMinutes;
+
+      if (offset) {
+        res.canIncrementMinutes = canIncrementMinutesWithOffset(offset, offsetTarget, max, _newHour, showSeconds);
+      }
     }
 
     if (!res.canIncrementMinutes) {
@@ -181,4 +194,43 @@ export function timepickerControls(
   }
 
   return res;
+}
+
+
+function canIncrementHoursWithOffset(offset: number, target: TimepickerOffsetTarget, max: Date, newTime: Date) {
+  if (target === TimepickerOffsetTarget.UTC) {
+    return offset < 0
+    ? (max.getUTCHours() - getOffsetHours(offset)) > (newTime.getUTCHours())
+    : (max.getUTCHours() + getOffsetHours(offset)) > (newTime.getUTCHours());
+  }
+
+  return offset < 0
+  ? (max.getHours() - getOffsetHours(offset)) > (newTime.getHours())
+  : (max.getHours() + getOffsetHours(offset)) > (newTime.getHours());
+}
+
+function canIncrementMinutesWithOffset(
+  offset: number,
+  target: TimepickerOffsetTarget,
+  max: Date,
+  newTime: Date,
+  showSeconds: boolean
+  ) {
+  if (target === TimepickerOffsetTarget.UTC) {
+    return showSeconds
+    ? (offset < 0
+      ? (max.getMinutes() - getOffsetMinutes(offset)) > newTime.getUTCMinutes()
+      : (max.getMinutes() + getOffsetMinutes(offset)) > newTime.getUTCMinutes())
+    : (offset < 0
+      ? (max.getMinutes() - getOffsetMinutes(offset)) >= newTime.getUTCMinutes()
+      : (max.getMinutes() + getOffsetMinutes(offset)) >= newTime.getUTCMinutes());
+  }
+
+  return showSeconds
+  ? (offset < 0
+    ? (max.getMinutes() - getOffsetMinutes(offset)) > newTime.getMinutes()
+    : (max.getMinutes() + getOffsetMinutes(offset)) > newTime.getMinutes())
+  : (offset < 0
+    ? (max.getMinutes() - getOffsetMinutes(offset)) >= newTime.getMinutes()
+    : (max.getMinutes() + getOffsetMinutes(offset)) >= newTime.getMinutes());
 }

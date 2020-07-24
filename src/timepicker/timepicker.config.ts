@@ -43,4 +43,15 @@ export class TimepickerConfig {
   ariaLabelMinutes = 'minutes';
   /** seconds aria label */
   ariaLabelSeconds = 'seconds';
+  /** offset to shift the display format of the shown time  */
+  offset: number;
+  /** decide how the offset should be applied: Client applies given offset to the timezone the user is in,
+   * Utc applies to the utc time.
+   */
+  offsetTarget: TimepickerOffsetTarget;
+}
+
+export enum TimepickerOffsetTarget {
+  Client = 'client',
+  UTC = 'UTC'
 }

@@ -8,8 +8,9 @@ import {
   TimepickerActions,
   TimepickerComponent,
   TimepickerConfig,
-  TimepickerModule
-} from '../../timepicker';
+  TimepickerModule,
+  TimepickerOffsetTarget
+} from 'ngx-bootstrap/timepicker';
 
 /* tslint:disable-next-line: no-any */
 function getInputElements(fixture: any) {
@@ -104,6 +105,267 @@ describe('Component: TimepickerComponent', () => {
 
     it('seconds placeholder should be \'SS\' ', () => {
       expect(component.secondsPlaceholder).toEqual('SS');
+    });
+  });
+
+  describe('given an offset', () => {
+    beforeEach(() => {
+      fixture = TestBed.createComponent(TimepickerComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      inputHours = getInputElements(fixture)[0];
+      inputMinutes = getInputElements(fixture)[1];
+      inputSeconds = getInputElements(fixture)[2];
+      buttonChanges = getElements(fixture, 'a.btn');
+      buttonMeridian = getElements(fixture, 'button')[0];
+    });
+
+    beforeEach(() => {
+      component.offsetTarget = TimepickerOffsetTarget.Client;
+    });
+
+    describe('when offset is positive', () => {
+      describe('and meridian true', () => {
+        beforeEach(() => {
+          component.showMeridian = true;
+          component.offsetTarget = TimepickerOffsetTarget.Client;
+        });
+
+        it('hours and minutes fields should change according to offsetTarget (client) and offset', () => {
+          component.offset = 60;
+          component.writeValue(testTime(12, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('01');
+          expect(inputMinutes.value).toBe('00');
+
+          component.writeValue(testTime(23, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('12');
+          expect(inputMinutes.value).toBe('00');
+
+          component.offset = 80;
+          component.writeValue(testTime(12, 40, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('02');
+          expect(inputMinutes.value).toBe('00');
+
+          component.writeValue(testTime(23, 40, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('01');
+          expect(inputMinutes.value).toBe('00');
+        });
+
+        it('hours and minutes fields should change according to offsetTarget (utc) and offset', () => {
+          component.offset = 140;
+          component.offsetTarget = TimepickerOffsetTarget.UTC;
+
+          spyOn(Date.prototype, 'getUTCHours').and.returnValue(11);
+          spyOn(Date.prototype, 'getUTCMinutes').and.returnValue(0);
+
+          component.writeValue(testTime(12, 0, 0));
+          fixture.detectChanges();
+
+          expect(inputHours.value).toBe('01');
+          expect(inputMinutes.value).toBe('20');
+        });
+
+        it('should change the meridian accordingly | AM to PM transition', () => {
+          component.showMeridian = true;
+
+          component.writeValue(testTime(11, 0, 0));
+          fixture.detectChanges();
+          expect(component.meridian).toEqual('AM');
+
+          component.offset = 80;
+          component.writeValue(testTime(11, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('12');
+          expect(inputMinutes.value).toBe('20');
+          expect(component.meridian).toEqual('PM');
+        });
+
+        it('should change the meridian accordingly | PM to AM transition', () => {
+          component.showMeridian = true;
+
+          component.writeValue(testTime(23, 0, 0));
+          fixture.detectChanges();
+          expect(component.meridian).toEqual('PM');
+
+          component.offset = 80;
+          component.writeValue(testTime(23, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('12');
+          expect(inputMinutes.value).toBe('20');
+          expect(component.meridian).toEqual('AM');
+        });
+      });
+
+      describe('and meridian false', () => {
+        beforeEach(() => {
+          component.showMeridian = false;
+          component.offsetTarget = TimepickerOffsetTarget.Client;
+        });
+        it('hours and minutes fields should change according to offsetTarget (client) and offset', () => {
+          component.offset = 60;
+          component.writeValue(testTime(12, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('13');
+          expect(inputMinutes.value).toBe('00');
+
+          component.writeValue(testTime(23, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('00');
+          expect(inputMinutes.value).toBe('00');
+
+          component.offset = 80;
+          component.writeValue(testTime(12, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('13');
+          expect(inputMinutes.value).toBe('20');
+
+          component.writeValue(testTime(23, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('00');
+          expect(inputMinutes.value).toBe('20');
+        });
+
+        it('hours and minutes fields should change according to offsetTarget (utc) and offset', () => {
+          component.offset = 140;
+          component.offsetTarget = TimepickerOffsetTarget.UTC;
+
+          spyOn(Date.prototype, 'getUTCHours').and.returnValue(11);
+          spyOn(Date.prototype, 'getUTCMinutes').and.returnValue(0);
+
+          component.writeValue(testTime(12, 0, 0));
+          fixture.detectChanges();
+
+          expect(inputHours.value).toBe('13');
+          expect(inputMinutes.value).toBe('20');
+        });
+      });
+    });
+
+    describe('when offset is negative', () => {
+      describe('and meridian true', () => {
+        beforeEach(() => {
+          component.showMeridian = true;
+          component.offsetTarget = TimepickerOffsetTarget.Client;
+        });
+
+        it('hours and minutes fields should change according to offsetTarget (client) and offset', () => {
+          component.offset = -60;
+          component.writeValue(testTime(12, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('11');
+          expect(inputMinutes.value).toBe('00');
+
+          component.writeValue(testTime(0, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('11');
+          expect(inputMinutes.value).toBe('00');
+
+          component.offset = -105;
+          component.writeValue(testTime(12, 40, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('10');
+          expect(inputMinutes.value).toBe('55');
+
+          component.writeValue(testTime(0, 40, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('10');
+          expect(inputMinutes.value).toBe('55');
+        });
+
+        it('hours and minutes fields should change according to offsetTarget (utc) and offset', () => {
+          component.offset = -140;
+          component.offsetTarget = TimepickerOffsetTarget.UTC;
+
+          spyOn(Date.prototype, 'getUTCHours').and.returnValue(11);
+          spyOn(Date.prototype, 'getUTCMinutes').and.returnValue(0);
+
+          component.writeValue(testTime(12, 0, 0));
+          fixture.detectChanges();
+
+          expect(inputHours.value).toBe('08');
+          expect(inputMinutes.value).toBe('40');
+        });
+
+        it('should change the meridian accordingly | AM to PM transition', () => {
+          component.showMeridian = true;
+
+          component.writeValue(testTime(1, 0, 0));
+          fixture.detectChanges();
+          expect(component.meridian).toEqual('AM');
+
+          component.offset = -80;
+          component.writeValue(testTime(1, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('11');
+          expect(inputMinutes.value).toBe('40');
+          expect(component.meridian).toEqual('PM');
+        });
+
+        it('should change the meridian accordingly | PM to AM transition', () => {
+          component.showMeridian = true;
+
+          component.writeValue(testTime(13, 0, 0));
+          fixture.detectChanges();
+          expect(component.meridian).toEqual('PM');
+
+          component.offset = -80;
+          component.writeValue(testTime(13, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('11');
+          expect(inputMinutes.value).toBe('40');
+          expect(component.meridian).toEqual('AM');
+        });
+      });
+
+      describe('and meridian false', () => {
+        beforeEach(() => {
+          component.showMeridian = false;
+          component.offsetTarget = TimepickerOffsetTarget.Client;
+        });
+        it('hours and minutes fields should change according to offsetTarget (client) and offset', () => {
+          component.showMeridian = false;
+
+          component.offset = -60;
+          component.writeValue(testTime(12, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('11');
+          expect(inputMinutes.value).toBe('00');
+
+          component.writeValue(testTime(0, 0, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('23');
+          expect(inputMinutes.value).toBe('00');
+
+          component.offset = -80;
+          component.writeValue(testTime(12, 40, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('11');
+          expect(inputMinutes.value).toBe('20');
+
+          component.writeValue(testTime(0, 40, 0));
+          fixture.detectChanges();
+          expect(inputHours.value).toBe('23');
+          expect(inputMinutes.value).toBe('20');
+        });
+        it('hours and minutes fields should change according to offsetTarget (utc) and offset', () => {
+          component.offset = -140;
+          component.offsetTarget = TimepickerOffsetTarget.UTC;
+
+          spyOn(Date.prototype, 'getUTCHours').and.returnValue(23);
+          spyOn(Date.prototype, 'getUTCMinutes').and.returnValue(0);
+
+          component.writeValue(testTime(0, 0, 0));
+          fixture.detectChanges();
+
+          expect(inputHours.value).toBe('20');
+          expect(inputMinutes.value).toBe('40');
+        });
+      });
     });
   });
 
@@ -270,6 +532,74 @@ describe('Component: TimepickerComponent', () => {
       component.writeValue(testTime(17, 57));
       fixture.detectChanges();
 
+      expect(buttonChanges[0]).toHaveCssClass('disabled');
+      expect(buttonChanges[1]).toHaveCssClass('disabled');
+    });
+  });
+
+  fdescribe('validate input fields with property of max and offset', () => {
+    beforeEach(() => {
+      fixture = TestBed.createComponent(TimepickerComponent);
+      fixture.detectChanges();
+
+      component = fixture.componentInstance;
+      inputHours = getInputElements(fixture)[0];
+      inputMinutes = getInputElements(fixture)[1];
+      buttonChanges = getElements(fixture, 'a.btn');
+      component.showMeridian = false;
+      component.offsetTarget = TimepickerOffsetTarget.Client;
+    });
+
+    it('should block the hours / minutes increment button if clicking on it will cause exceeding the max value', () => {
+      component.max = testTime(18);
+      component.offset = 60;
+      component.writeValue(testTime(16, 50));
+      fixture.detectChanges();
+      expect(buttonChanges[0]).not.toHaveCssClass('disabled');
+      expect(buttonChanges[1]).not.toHaveCssClass('disabled');
+    });
+
+    it('should block the hours / minutes increment button if clicking on it will cause exceeding the max value', () => {
+      component.max = testTime(18);
+      component.offset = 60;
+      component.writeValue(testTime(17, 50));
+      fixture.detectChanges();
+      expect(buttonChanges[0]).toHaveCssClass('disabled');
+      expect(buttonChanges[1]).not.toHaveCssClass('disabled');
+    });
+
+    it('should block the hours / minutes increment button if clicking on it will cause exceeding the max value', () => {
+      component.max = testTime(18);
+      component.offset = 60;
+      component.writeValue(testTime(17, 57));
+      fixture.detectChanges();
+      expect(buttonChanges[0]).toHaveCssClass('disabled');
+      expect(buttonChanges[1]).toHaveCssClass('disabled');
+    });
+
+    it('should block the hours / minutes increment button if clicking on it will cause exceeding the max value', () => {
+      component.max = testTime(18);
+      component.offset = -60;
+      component.writeValue(testTime(16, 50));
+      fixture.detectChanges();
+      expect(buttonChanges[0]).not.toHaveCssClass('disabled');
+      expect(buttonChanges[1]).not.toHaveCssClass('disabled');
+    });
+
+    it('should block the hours / minutes increment button if clicking on it will cause exceeding the max value', () => {
+      component.max = testTime(18);
+      component.offset = -60;
+      component.writeValue(testTime(17, 50));
+      fixture.detectChanges();
+      expect(buttonChanges[0]).toHaveCssClass('disabled');
+      expect(buttonChanges[1]).not.toHaveCssClass('disabled');
+    });
+
+    it('should block the hours / minutes increment button if clicking on it will cause exceeding the max value', () => {
+      component.max = testTime(18);
+      component.offset = -60;
+      component.writeValue(testTime(17, 57));
+      fixture.detectChanges();
       expect(buttonChanges[0]).toHaveCssClass('disabled');
       expect(buttonChanges[1]).toHaveCssClass('disabled');
     });
