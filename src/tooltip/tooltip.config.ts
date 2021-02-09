@@ -15,4 +15,6 @@ export class TooltipConfig {
   container: string;
   /** delay before showing the tooltip */
   delay = 0;
+  /** delay before hiding the tooltip */
+  hideAfterDelay = 0;
 }

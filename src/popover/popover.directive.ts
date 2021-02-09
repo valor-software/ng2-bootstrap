@@ -75,7 +75,7 @@ export class PopoverDirective implements OnInit, OnDestroy {
   }
 
   /**
-   * Delay before showing the tooltip
+   * Delay before showing the popover
    */
   @Input() delay: number;
 
@@ -93,6 +93,7 @@ export class PopoverDirective implements OnInit, OnDestroy {
   protected _popoverCancelShowFn: Function;
 
   protected _delayTimeoutId: number | any;
+  private hideAfterDelay: number;
 
   private _popover: ComponentLoader<PopoverContainerComponent>;
   private _isInited = false;
@@ -218,6 +219,12 @@ export class PopoverDirective implements OnInit, OnDestroy {
       }
     } else {
       showPopover();
+    }
+
+    if (this.hideAfterDelay) {
+      timer(this.hideAfterDelay).subscribe(() => {
+        this.hide();
+      });
     }
   }
 

@@ -206,6 +206,7 @@ export class TooltipDirective implements OnInit, OnDestroy {
   private _tooltip: ComponentLoader<TooltipContainerComponent>;
   private _delaySubscription: Subscription;
   private _ariaDescribedby: string;
+  private hideAfterDelay: number;
   constructor(
     _viewContainerRef: ViewContainerRef,
     cis: ComponentLoaderFactory,
@@ -214,7 +215,6 @@ export class TooltipDirective implements OnInit, OnDestroy {
     private _renderer: Renderer2,
     private _positionService: PositioningService
   ) {
-
     this._tooltip = cis
       .createLoader<TooltipContainerComponent>(
         this._elementRef,
@@ -344,6 +344,12 @@ export class TooltipDirective implements OnInit, OnDestroy {
       }
     } else {
       showTooltip();
+    }
+
+    if (this.hideAfterDelay) {
+      timer(this.hideAfterDelay).subscribe(() => {
+        this.hide();
+      });
     }
   }
 

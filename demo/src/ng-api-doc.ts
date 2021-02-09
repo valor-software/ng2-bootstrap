@@ -2938,7 +2938,13 @@ export const ngdoc: any = {
         "name": "delay",
         "defaultValue": "0",
         "type": "number",
-        "description": "<p>delay before showing the tooltip</p>\n"
+        "description": "<p>delay before showing the popover</p>\n"
+      },
+      {
+        "name": "hideAfterDelay",
+        "defaultValue": "0",
+        "type": "number",
+        "description": "<p>delay before hiding the popover</p>\n"
       },
       {
         "name": "placement",
@@ -2979,7 +2985,7 @@ export const ngdoc: any = {
       {
         "name": "delay",
         "type": "number",
-        "description": "<p>Delay before showing the tooltip</p>\n"
+        "description": "<p>Delay before showing the popover</p>\n"
       },
       {
         "name": "isOpen",
@@ -3811,6 +3817,12 @@ export const ngdoc: any = {
         "defaultValue": "0",
         "type": "number",
         "description": "<p>delay before showing the tooltip</p>\n"
+      },
+      {
+        "name": "hideAfterDelay",
+        "defaultValue": "0",
+        "type": "number",
+        "description": "<p>delay before hiding the tooltip</p>\n"
       },
       {
         "name": "placement",
