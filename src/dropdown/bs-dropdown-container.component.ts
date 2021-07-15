@@ -1,19 +1,14 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnDestroy,
-  Renderer2
-} from '@angular/core';
-
-import { BsDropdownState } from './bs-dropdown.state';
-import { isBs3 } from 'ngx-bootstrap/utils';
-
-import { dropdownAnimation } from './dropdown-animations';
 import { AnimationBuilder, AnimationFactory } from '@angular/animations';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, Renderer2 } from '@angular/core';
+import { isBs3 } from 'ngx-bootstrap/utils';
 import { Subscription } from 'rxjs';
 
+import { BsDropdownState } from './bs-dropdown.state';
+
+import { dropdownAnimation } from './dropdown-animations';
+
+// todo: revert ngClass to [class] when false positive angular-cli issue is fixed
+//          [class.dropdown]="direction === 'down'"-->
 @Component({
   selector: 'bs-dropdown-container',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,7 +18,7 @@ import { Subscription } from 'rxjs';
   },
   template: `
     <div [class.dropup]="direction === 'up'"
-         [class.dropdown]="direction === 'down'"
+         [ngClass]="{dropdown: direction === 'down'}"
          [class.show]="isOpen"
          [class.open]="isOpen"><ng-content></ng-content>
     </div>

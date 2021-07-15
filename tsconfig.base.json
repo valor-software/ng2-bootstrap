@@ -71,6 +71,21 @@
       ],
       "@ngx-bootstrap-doc/typeahead": [
         "libs/doc-pages/typeahead/src/index.ts"
+      ],
+      "ngx-bootstrap/progressbar": [
+        "src/progressbar/index.ts"
+      ],
+      "ngx-bootstrap/dropdown": [
+        "src/dropdown/index.ts"
+      ],
+      "ngx-bootstrap/positioning": [
+        "src/positioning/index.ts"
+      ],
+      "ngx-bootstrap/component-loader": [
+        "src/component-loader/index.ts"
+      ],
+      "ngx-bootstrap/utils": [
+        "src/utils/index.ts"
       ]
     }
   },

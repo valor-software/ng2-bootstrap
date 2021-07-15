@@ -49,6 +49,7 @@
             "main": "apps/ngx-bootstrap-docs/src/main.ts",
             "polyfills": "apps/ngx-bootstrap-docs/src/polyfills.ts",
             "tsConfig": "apps/ngx-bootstrap-docs/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
             "aot": true,
             "assets": [
               "apps/ngx-bootstrap-docs/src/assets",
@@ -86,21 +87,44 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "development": {
+              "buildOptimizer": true,
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": false,
+                  "inlineCritical": false
+                },
+                "fonts": true
+              },
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "baseHref": "/ngx-bootstrap/",
             "browserTarget": "ngx-bootstrap-docs:build"
           },
           "configurations": {
             "production": {
-              "baseHref": "/ngx-bootstrap/",
               "browserTarget": "ngx-bootstrap-docs:build:production"
+            },
+            "development": {
+              "browserTarget": "ngx-bootstrap-docs:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
@@ -179,7 +203,13 @@
             "production": {
               "tsConfig": "src/accordion/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -221,7 +251,13 @@
             "production": {
               "tsConfig": "src/alert/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -305,7 +341,13 @@
             "production": {
               "tsConfig": "src/carousel/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -431,7 +473,13 @@
             "production": {
               "tsConfig": "src/component-loader/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -473,7 +521,13 @@
             "production": {
               "tsConfig": "src/datepicker/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -515,7 +569,13 @@
             "production": {
               "tsConfig": "src/dropdown/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -599,7 +659,13 @@
             "production": {
               "tsConfig": "src/locale/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -683,7 +749,13 @@
             "production": {
               "tsConfig": "src/modal/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -767,7 +839,13 @@
             "production": {
               "tsConfig": "src/popover/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -851,7 +929,13 @@
             "production": {
               "tsConfig": "src/progressbar/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1019,7 +1103,13 @@
             "production": {
               "tsConfig": "src/timepicker/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1061,7 +1151,13 @@
             "production": {
               "tsConfig": "src/tooltip/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1103,7 +1199,13 @@
             "production": {
               "tsConfig": "src/typeahead/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1188,7 +1290,13 @@
           },
           "configurations": {
             "production": {}
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "ng-build": {
           "builder": "@nrwl/angular:package",
@@ -1225,7 +1333,7 @@
           "builder": "@nrwl/workspace:run-commands",
           "outputs": [],
           "options": {
-            "command": "sass src:node_modules/ngx-bootstrap --source-map"
+            "command": "npx sass src:node_modules/ngx-bootstrap --source-map"
           }
         },
         "docs": {
@@ -1321,7 +1429,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/accordion/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1360,7 +1474,13 @@
             "production": {
               "tsConfig": "libs/common-docs/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1399,7 +1519,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/alerts/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1438,7 +1564,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/buttons/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1477,7 +1609,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/carousel/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1516,7 +1654,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/collapse/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1555,7 +1699,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/datepicker/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1594,7 +1744,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/dropdown/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1633,7 +1789,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/modal/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1672,7 +1834,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/pagination/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1711,7 +1879,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/popover/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1750,7 +1924,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/progressbar/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1789,7 +1969,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/rating/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1828,7 +2014,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/sortable/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1867,7 +2059,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/tabs/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1906,7 +2104,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/timepicker/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1945,7 +2149,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/tooltip/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
@@ -1984,7 +2194,13 @@
             "production": {
               "tsConfig": "libs/doc-pages/typeahead/tsconfig.lib.prod.json"
             }
-          }
+          },
+          "dependsOn": [
+            {
+              "target": "build",
+              "projects": "dependencies"
+            }
+          ]
         },
         "lint": {
           "builder": "@nrwl/linter:eslint",
